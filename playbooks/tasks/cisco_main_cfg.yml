@@ -7,6 +7,7 @@
     commands:
       - "show running-config | include hostname"
 
+
 # ---
 - name: "SET HOSTMANE"
   with_items: "{{ hostname }}"
@@ -16,6 +17,7 @@
     provider: "{{ cli }}"
     lines:
       - "{{ item }}"
+
 
 # ---
 - name: "POSTPONE CONFIGURATION SAVE"
@@ -29,4 +31,3 @@
     provider: "{{ cli }}"
     commands:
       - "write memory"
-

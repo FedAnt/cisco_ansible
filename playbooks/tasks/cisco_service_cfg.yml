@@ -10,14 +10,6 @@
       - "show running-config | include service dhcp"
 
 
-#- name: "DEBUG GET SERVICE CONFIG"
-#  debug: var=get_service_config.stdout_lines
-
-
-# ---
-#- name: "REMOVE SERVICE"
-
-
 - name: "SET SERVICE"
   when: "(item not in get_service_config.stdout_lines[0][0])"
   with_items: "{{ service_vars.service_commands }}"
@@ -40,5 +32,3 @@
     provider: "{{ cli }}"
     commands:
       - "write memory"
-
-

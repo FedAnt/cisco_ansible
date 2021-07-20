@@ -7,5 +7,3 @@
     provider: "{{ cli }}"
     commands:
       - "write memory"
-
-

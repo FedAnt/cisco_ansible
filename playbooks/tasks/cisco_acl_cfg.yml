@@ -12,7 +12,6 @@
 
 - name: "REMOVE ACL FROM VTY"
   register: remove_from_vty_acl_ssh
-#  when: get_acl_config.stdout_lines[1][0] != ""
   ios_config:
     lines: no access-class SSH_Access in
     parents: line vty 0 15
@@ -48,8 +47,3 @@
     provider: "{{ cli }}"
     lines:
       - "{{ item }}"
-
-
-
-
-

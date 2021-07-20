@@ -10,7 +10,6 @@
     - name: run sh int status
       ios_command:
         commands: show int status
-#        backup: yes
         provider: "{{ cli }}"
 
       register: sh_int_status_res

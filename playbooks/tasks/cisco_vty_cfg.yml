@@ -12,5 +12,3 @@
       - transport input ssh
     provider: "{{ cli }}"
   notify: save config
-
-

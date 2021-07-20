@@ -7,9 +7,6 @@
     commands:
       - "show running-config | include snmp-server host"
 
-#- name: "DEBUG GET SNMP CONFIG"
-#  debug: var=get_snmp_config.stdout_lines[0]
-
 
 - name: "REMOVE SNMP CONFIG"
   when: get_snmp_config.stdout_lines[0][0] != ""
@@ -34,9 +31,6 @@
     commands:
       - "show snmp engineID"
 
-#- name: "DEBUG GET SNMP ENGINEID"
-#  debug: var=get_snmp_engineID.stdout_lines[0][2].split("\t")[0]
-
 - name: "SET SNMP ENGINEID"
   when: "get_snmp_engineID.changed == true"
   register: set_snmp_engineID
@@ -52,4 +46,3 @@
     provider: "{{ cli }}"
     lines:
       - "{{ item }}"
-

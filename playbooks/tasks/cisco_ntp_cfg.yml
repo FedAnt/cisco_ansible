@@ -10,9 +10,6 @@
       - "show running-config | include ntp source"
       - "show running-config | include ntp server"
 
-#- name: "DEBUG GET NTP CONFIG"
-#  debug: var=get_ntp_config.stdout_lines[0][0]
-
 
 - name: "SET TIMEZONE"
   when: "(ntp_vars.timezone is defined) and (ntp_vars.timezone != get_ntp_config.stdout_lines[0][0])"
@@ -103,5 +100,3 @@
     provider: "{{ cli }}"
     commands:
       - "write memory"
-
-

@@ -6,10 +6,7 @@
     provider: "{{ cli }}"
     commands:
       - "show running-config | include logging"
-      - "show running-config | include logging 172."
-
-#- name: "DEBUG GET LOGGING CONFIG"
-#  debug: var=get_logg_config.stdout_lines[1][0]
+      - "show running-config | include logging 192."
 
 
 # ---
@@ -31,6 +28,7 @@
     lines:
       - "{{ item }}"
 
+
 # ---
 - name: "POSTPONE CONFIGURATION SAVE"
   when: (remove_logg_server.changed == true) or
@@ -44,5 +42,3 @@
     provider: "{{ cli }}"
     commands:
       - "write memory"
-
-

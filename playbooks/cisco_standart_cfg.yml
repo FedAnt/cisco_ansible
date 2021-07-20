@@ -1,10 +1,7 @@
 ---
 
 - name: Main standart config for switches
-#  hosts: switches
-  hosts: test
-#  hosts: new
-#  hosts: with-err
+  hosts: switches
   gather_facts: false
   connection: local
 
