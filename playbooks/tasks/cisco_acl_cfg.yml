@@ -1,0 +1,55 @@
+---
+
+- name: "GET ACL CONFIGURATION"
+  register: get_acl_config
+  ios_command:
+    provider: "{{ cli }}"
+    commands:
+      - "show boot | include BOOT path-list"
+      - "show running-config | inc access-class SSH_Access in"
+      - "show access-lists SSH_Access | include permit"
+      - "show access-lists SSH_Access | include deny"
+
+- name: "REMOVE ACL FROM VTY"
+  register: remove_from_vty_acl_ssh
+#  when: get_acl_config.stdout_lines[1][0] != ""
+  ios_config:
+    lines: no access-class SSH_Access in
+    parents: line vty 0 15
+    after: no ip access-list standard SSH_Access
+
+- name: "SET ACL FOR SSH PERMIT"
+  register: set_acl_ssh
+  with_items: "{{ acl_vars.ssh_acl }}"
+  ios_config:
+    provider: "{{ cli }}"
+    lines:
+      - "{{ item }}"
+    parents: ip access-list extended acl-ssh
+
+- name: "SET ACL IN LINE VTY"
+  register: set_acl_ssh_line_vty
+  ios_config:
+    lines: access-class acl-ssh in
+    parents: line vty 0 15
+
+- name: "SET ACL FOR SNMP PERMIT"
+  register: set_acl_snmp
+  with_items: "{{ acl_vars.snmp_acl }}"
+  ios_config:
+    provider: "{{ cli }}"
+    lines:
+      - "{{ item }}"
+
+- name: "SET ACL FOR NTP PERMIT"
+  register: set_acl_ntp
+  with_items: "{{ acl_vars.ntp_acl }}"
+  ios_config:
+    provider: "{{ cli }}"
+    lines:
+      - "{{ item }}"
+
+
+
+
+

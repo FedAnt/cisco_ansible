@@ -1,0 +1,107 @@
+---
+
+- name: "GET NTP CONFIGURATION"
+  register: get_ntp_config
+  ios_command:
+    provider: "{{ cli }}"
+    commands:
+      - "show running-config | include clock timezone"
+      - "show running-config | include clock summer-time"
+      - "show running-config | include ntp source"
+      - "show running-config | include ntp server"
+
+#- name: "DEBUG GET NTP CONFIG"
+#  debug: var=get_ntp_config.stdout_lines[0][0]
+
+
+- name: "SET TIMEZONE"
+  when: "(ntp_vars.timezone is defined) and (ntp_vars.timezone != get_ntp_config.stdout_lines[0][0])"
+  register: set_timezone
+  ios_config:
+    provider: "{{ cli }}"
+    lines:
+      - "{{ ntp_vars.timezone }}"
+
+# ---
+- name: "REMOVE SUMMERTIME"
+  when: "(ntp_vars.summertime is not defined) and (get_ntp_config.stdout_lines[1][0] != \"\")"
+  register: remove_summertime
+  ios_config:
+    provider: "{{ cli }}"
+    lines:
+      - "no {{ get_ntp_config.stdout_lines[1][0] }}"
+
+- name: "SET SUMMERTIME"
+  when: "(ntp_vars.summertime is defined) and (ntp_vars.summertime != get_ntp_config.stdout_lines[0][0])"
+  register: set_summertime
+  ios_config:
+    provider: "{{ cli }}"
+    lines:
+      - "{{ ntp_vars.summertime }}"
+  
+
+# ---
+- name: "REMOVE NTP SOURCE"
+  when: "(ntp_vars.ntp_source is not defined) and (get_ntp_config.stdout_lines[2][0] != \"\")"
+  register: remove_ntp_source
+  ios_config:
+    provider: "{{ cli }}"
+    lines:
+      - "no {{ get_ntp_config.stdout_lines[2][0] }}"
+
+- name: "SET NTP SOURCE"
+  when: "(ntp_vars.ntp_source is defined) and (ntp_vars.ntp_source != get_ntp_config.stdout_lines[2][0])"
+  register: set_ntp_source
+  ios_config:
+    provider: "{{ cli }}"
+    lines:
+      - "{{ ntp_vars.ntp_source }}"
+
+
+# ---
+- name: "REMOVE NTP SERVER"
+  when: "(get_ntp_config.stdout_lines[3][0] != '') and (item not in ntp_vars.ntp_servers)"
+  with_items: "{{ get_ntp_config.stdout_lines[3] }}"
+  register: remove_ntp_server
+  ios_config:
+    provider: "{{ cli }}"
+    lines:
+      - "no {{ item }}"
+
+- name: "SET NTP SERVER"
+  when: "(item not in get_ntp_config.stdout_lines[3])"
+  with_items: "{{ ntp_vars.ntp_servers }}"
+  register: set_ntp_server
+  ios_config:
+    provider: "{{ cli }}"
+    lines:
+      - "{{ item }}"
+
+- name: "SET NTP ACL APPLY"
+  register: set_ntp_acl_apl
+  ios_config:
+    provider: "{{ cli }}"
+    lines:
+      - "{{ ntp_vars.ntp_acl_apl }}"
+
+- name: "POSTPONE CONFIGURATION SAVE"
+  when: (set_timezone.changed == true) or
+    (set_summertime.changed == true) or
+    (remove_summertime.changed == true) or
+    (set_ntp_source.changed == true) or
+    (remove_summertime.changed == true) or
+    (set_ntp_server.changed == true) or
+    (remove_ntp_server.changed == true)
+  set_fact: configured=true
+
+
+# ---
+- name: "CONFIGURATION SAVE"
+  when: "(configured is defined) and (configured == true)"
+  register: save_config
+  ios_command:
+    provider: "{{ cli }}"
+    commands:
+      - "write memory"
+
+

@@ -1,0 +1,11 @@
+---
+
+- name: "POSTPONE CONFIGURATION SAVE"
+  when: "(configured is defined) and (configured == true)"
+  register: save_config
+  ios_command:
+    provider: "{{ cli }}"
+    commands:
+      - "write memory"
+
+

@@ -1,0 +1,92 @@
+---
+
+main_vars:
+  standart:
+    - "ip ssh time-out 120"
+    - "errdisable recovery cause security-violation"
+    - "errdisable recovery interval 120"
+    - "ip subnet-zero"
+    - "no ip source-route"
+#    - "spanning-tree mode rapid-pvst"
+    - "spanning-tree extend system-id"
+#    - "ip icmp rate-limit unreachable 1000"
+#    - "ip icmp rate-limit unreachable DF 1000"
+    - "no ip http server"
+    - "no ip http secure-server"
+
+logging_vars:
+  comm:
+    - "logging buffered 262144 debugging"
+    - "logging rate-limit 10 except warnings"
+    - "logging console critical"
+    - "logging history size 100"
+    - "logging trap critical"
+    - "logging facility local2"
+    - "logging 172.16.252.40"
+
+dns_vars:
+  domain_name: "ip domain-name mccd.mcc.krasnoyarsk.su"
+  domain_list: "ip domain-list mccd.mcc.krasnoyarsk.su"
+  dns_servers: 
+    - "ip name-server 172.16.252.131"
+    - "ip name-server 172.16.252.231"
+
+service_vars:
+  service_commands:
+    - "no service pad"
+    - "service tcp-keepalives-in"
+    - "service tcp-keepalives-out"
+    - "service timestamps debug datetime localtime"
+    - "service timestamps log datetime localtime"
+    - "service password-encryption"
+    - "service sequence-numbers"
+    - "no service dhcp"
+
+ntp_vars:
+  timezone: "clock timezone KRAT 7"
+  #summertime ""
+  #source ""
+  ntp_servers:
+    - "ntp server 172.16.252.100"
+    - "ntp server 172.16.252.200"
+  ntp_acl_apl: "ntp access-group peer 12"
+
+acl_vars:
+  ssh_acl:
+    - "permit ip host 172.16.1.250 any log"
+    - "permit ip host 172.16.252.40 any log"
+    - "permit ip host 172.16.1.113 any log"
+    - "permit ip host 172.16.1.115 any log"
+    - "permit ip host 172.16.1.114 any log"
+    - "permit ip host 172.16.1.88 any log"
+    - "permit ip host 172.16.1.100 any log"
+  snmp_acl:
+    - "access-list 88 remark snmp-acl"
+    - "access-list 88 permit 172.16.252.40 log"
+    - "access-list 88 permit 172.16.1.100 log"
+    - "access-list 88 permit 172.16.1.88 log"
+  ntp_acl:
+    - "access-list 12 remark ntp"
+    - "access-list 12 permit 172.16.252.100 log"
+    - "access-list 12 permit 172.16.252.200 log"
+
+snmp_vars:
+  snmp_server:
+    - "snmp-server group givc v3 auth read v3read access 88"
+    - "snmp-server user ivc givc remote 172.16.252.40 v3 auth md5 ivcSnmpPasS"
+    - "snmp-server view v3read iso include"
+    - "snmp-server host 172.16.252.40 informs version 3 auth ivc config"
+    - "snmp-server enable traps"
+    - "snmp-server inform retries 0"
+    - "snmp-server contact Anton O. Fedyashev t.75-20-34"
+  snmp_engineID: "snmp-server engineID remote 172.16.252.40 "
+  no_snmp_server:
+    - "no snmp-server view v3write iso included"
+    - "no snmp-server group ivc v3 auth read"
+    - "no snmp-server community public RO"
+
+cli:
+  host: "{{ inventory_hostname }}"
+  username: "ivc"
+
+

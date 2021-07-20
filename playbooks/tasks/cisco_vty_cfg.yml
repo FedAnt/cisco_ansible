@@ -1,0 +1,16 @@
+---
+
+- name: Config line vty
+  ios_config:
+    parents:
+      - line vty 0 15
+    lines:
+      - exec-timeout 30 0
+      - logging synchronous
+      - login local
+      - history size 100
+      - transport input ssh
+    provider: "{{ cli }}"
+  notify: save config
+
+
