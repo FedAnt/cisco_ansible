@@ -1,0 +1,74 @@
+---
+
+main_vars:
+  standart:
+    - "ip ssh time-out 120"
+    - "errdisable recovery cause security-violation"
+    - "errdisable recovery interval 120"
+    - "ip subnet-zero"
+    - "no ip source-route"
+    - "spanning-tree extend system-id"
+    - "no ip http server"
+    - "no ip http secure-server"
+
+logging_vars:
+  comm:
+    - "logging buffered 262144 debugging"
+    - "logging rate-limit 10 except warnings"
+    - "logging console critical"
+    - "logging history size 100"
+    - "logging trap critical"
+    - "logging facility local2"
+    - "logging 192.168.111.111"
+
+dns_vars:
+  domain_name: "ip domain-name somedomainname.com"
+  dns_servers: 
+    - "ip name-server 192.168.111.111"
+
+service_vars:
+  service_commands:
+    - "no service pad"
+    - "service tcp-keepalives-in"
+    - "service tcp-keepalives-out"
+    - "service timestamps debug datetime localtime"
+    - "service timestamps log datetime localtime"
+    - "service password-encryption"
+    - "service sequence-numbers"
+    - "no service dhcp"
+
+ntp_vars:
+  timezone: "clock timezone KRAT 7"
+  ntp_servers:
+    - "ntp server 192.168.111.111"
+  ntp_acl_apl: "ntp access-group peer 12"
+
+acl_vars:
+  ssh_acl:
+    - "permit ip host 192.168.110.250 any log"
+  snmp_acl:
+    - "access-list 88 remark snmp-acl"
+    - "access-list 88 permit 192.168.111.111 log"
+  ntp_acl:
+    - "access-list 12 remark ntp"
+    - "access-list 12 permit 192.168.110.250 log"
+
+snmp_vars:
+  snmp_server:
+    - "snmp-server group greaduser v3 auth read v3read access 88"
+    - "snmp-server user someuser greaduser remote 192.168.111.110 v3 auth md5 somepasswordsnmp"
+    - "snmp-server view v3read iso include"
+    - "snmp-server host 192.168.111.40 informs version 3 auth someusername config"
+    - "snmp-server enable traps"
+    - "snmp-server inform retries 0"
+  snmp_engineID: "snmp-server engineID remote 192.168.111.111 "
+  no_snmp_server:
+    - "no snmp-server view v3write iso included"
+    - "no snmp-server group greaduser v3 auth read"
+    - "no snmp-server community public RO"
+
+cli:
+  host: "{{ inventory_hostname }}"
+  username: "someusernamecisco"
+
+

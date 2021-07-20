@@ -1,0 +1,44 @@
+---
+
+- name: "GET LOGGING CONFIG"
+  register: get_logg_config
+  ios_command:
+    provider: "{{ cli }}"
+    commands:
+      - "show running-config | include logging"
+      - "show running-config | include logging 192."
+
+
+# ---
+- name: REMOVE LOGGING SERVERS"
+  when: "(get_logg_config.stdout_lines[1][0] != '') and (item not in logging_vars.comm)"
+  with_items: "{{ get_logg_config.stdout_lines[1] }}"
+  register: remove_logg_server
+  ios_config:
+    provider: "{{ cli }}"
+    lines:
+      - "no {{ item }}"
+
+- name: "SET LOGGING CONFIG"
+  when: "(item not in get_logg_config.stdout_lines[0])"
+  with_items: "{{ logging_vars.comm }}"
+  register: set_logg_server
+  ios_config:
+    provider: "{{ cli }}"
+    lines:
+      - "{{ item }}"
+
+
+# ---
+- name: "POSTPONE CONFIGURATION SAVE"
+  when: (remove_logg_server.changed == true) or
+    (set_logg_server.changed == true)
+  set_fact: configured=true
+
+- name: "CONFIGURATION SAVE"
+  when: "(configured is defined) and (configured == true)"
+  register: save_config
+  ios_command:
+    provider: "{{ cli }}"
+    commands:
+      - "write memory"

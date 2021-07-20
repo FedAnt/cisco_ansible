@@ -1,0 +1,20 @@
+---
+
+- name: Main standart config for switches
+  hosts: switches
+  gather_facts: false
+  connection: local
+
+  tasks:
+    - import_tasks: tasks/cisco_service_cfg.yml
+    - import_tasks: tasks/cisco_main_cfg.yml
+    - import_tasks: tasks/cisco_dns_cfg.yml
+    - import_tasks: tasks/cisco_ntp_cfg.yml
+    - import_tasks: tasks/cisco_vty_cfg.yml
+    - import_tasks: tasks/cisco_logging_cfg.yml
+    - import_tasks: tasks/cisco_acl_cfg.yml
+    - import_tasks: tasks/cisco_snmp_cfg.yml
+
+  handlers:
+
+    - import_tasks: handlers/cisco_save_cfg.yml

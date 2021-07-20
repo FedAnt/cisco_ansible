@@ -1,0 +1,66 @@
+---
+
+- name: "GET DNS CONFIGURATION"
+  register: get_dns_config
+  ios_command:
+    provider: "{{ cli }}"
+    commands:
+      - "show running-config | include ip name-server"
+      - "show running-config | include ip domain-name"
+      - "show running-config | include ip domain-list"
+
+
+- name: "SET DNS SERVERS"
+  when: "(item not in get_dns_config.stdout_lines[0])"
+  with_items: "{{ dns_vars.dns_servers }}"
+  register: set_dns_servers
+  ios_config:
+    provider: "{{ cli }}"
+    lines:
+      - "{{ item }}"
+
+
+- name: "REMOVE DNS SERVERS"
+  when: "(get_dns_config.stdout_lines[0][0] != '') and (item not in dns_vars.dns_servers)"
+  with_items: "{{ get_dns_config.stdout_lines[0] }}"
+  register: remove_dns_servers
+  ios_config:
+    provider: "{{ cli }}"
+    lines:
+      - "no {{ item }}"
+
+# ---
+- name: "SET DOMAIN NAME"
+  when: "(dns_vars.domain_name is defined) and (dns_vars.domain_name != get_dns_config.stdout_lines[1][0])"
+  register: set_domain_name
+  ios_config:
+    provider: "{{ cli }}"
+    lines:
+      - "{{ dns_vars.domain_name }}"
+
+
+- name: "SET DOMAIN LIST"
+  when: "(dns_vars.domain_list is defined) and (dns_vars.domain_list != get_dns_config.stdout_lines[2][0])"
+  register: set_domain_list
+  ios_config:
+    provider: "{{ cli }}"
+    lines:
+      - "{{ dns_vars.domain_list }}"
+
+
+# ---
+- name: "POSTPONE CONFIGURATION SAVE"
+  when: (set_dns_servers.changed == true) or
+    (remove_dns_servers.changed == true) or
+    (set_domain_name.changed == true) or
+    (set_domain_list.changed == true)
+  set_fact: configured=true
+
+- name: "CONFIGURATION SAVE"
+  when: "(configured is defined) and (configured == true)"
+  register: save_config
+  ios_command:
+    provider: "{{ cli }}"
+    commands:
+      - "write memory"
+

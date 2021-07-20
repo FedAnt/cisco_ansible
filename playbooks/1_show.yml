@@ -1,0 +1,19 @@
+---
+
+- name: Run show commands on switches
+  hosts: switches
+  gather_facts: false
+  connection: local
+
+  tasks:
+
+    - name: run sh int status
+      ios_command:
+        commands: show int status
+        provider: "{{ cli }}"
+
+      register: sh_int_status_res
+
+    - name: Debug register var
+      debug: var=sh_int_status_res.stdout_lines
+

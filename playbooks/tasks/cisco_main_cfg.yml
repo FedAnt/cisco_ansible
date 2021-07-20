@@ -1,0 +1,33 @@
+---
+
+- name: "GET HOSTNAME"
+  register: get_hostname
+  ios_command:
+    provider: "{{ cli }}"
+    commands:
+      - "show running-config | include hostname"
+
+
+# ---
+- name: "SET HOSTMANE"
+  with_items: "{{ hostname }}"
+  when: "(hostname is defined) and (hostname != get_hostname.stdout_lines[0][0])"
+  register: set_hostname_commands
+  ios_config:
+    provider: "{{ cli }}"
+    lines:
+      - "{{ item }}"
+
+
+# ---
+- name: "POSTPONE CONFIGURATION SAVE"
+  when: "(set_hostname_commands.changed == true)"
+  set_fact: configured=true
+
+- name: "POSTPONE CONFIGURATION SAVE"
+  when: "(configured is defined) and (configured == true)"
+  register: save_config
+  ios_command:
+    provider: "{{ cli }}"
+    commands:
+      - "write memory"

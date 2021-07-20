@@ -1,0 +1,34 @@
+---
+
+- name: "GET SERVICE CONFIGURATION"
+  register: get_service_config
+  ios_command:
+    provider: "{{ cli }}"
+    commands:
+      - "show running-config | include service"
+      - "show running-config | include service pad"
+      - "show running-config | include service dhcp"
+
+
+- name: "SET SERVICE"
+  when: "(item not in get_service_config.stdout_lines[0][0])"
+  with_items: "{{ service_vars.service_commands }}"
+  register: set_service_commands
+  ios_config:
+    provider: "{{ cli }}"
+    lines:
+      - "{{ item }}"
+
+
+# ---
+- name: "POSTPONE CONFIGURATION SAVE"
+  when: "(set_service_commands.changed == true)"
+  set_fact: configured=true
+
+- name: "POSTPONE CONFIGURATION SAVE"
+  when: "(configured is defined) and (configured == true)"
+  register: save_config
+  ios_command:
+    provider: "{{ cli }}"
+    commands:
+      - "write memory"
